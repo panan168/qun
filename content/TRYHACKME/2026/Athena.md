@@ -26,3 +26,8 @@ gobuster dir -u 10.48.155.161 -w /usr/share/wordlists/dirbuster/directory-list-2
 访问网站时，我们只看到一个静态页面，没有可用的链接。
 
 ![扫描结果](./assets/Athena_03.png)
+
+查看源代码，并没有什么值得关注
+
+![扫描结果](./assets/Athena_04.png)
+
