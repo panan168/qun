@@ -27,8 +27,8 @@ This plugin accepts the following configuration options:
   enabled: true
   options:
     links:
-      GitHub: https://github.com/jackyzha0/quartz
-      Discord Community: https://discord.gg/cRFFHYye7t
+      GitHub: https://github.com/panan168/qun
+      QQ group: https://qm.qq.com/q/aPYpZ0pkuQ
 ```
 
 ## API
