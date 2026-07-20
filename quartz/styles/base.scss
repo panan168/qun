@@ -226,6 +226,14 @@ a {
       display: flex;
       height: 100vh;
       position: sticky;
+
+      @media all and ($mobile) {
+        position: static;
+        height: auto;
+        width: 100%;
+        padding: 0;
+        margin: 0 0 1rem 0;
+      }
     }
 
     & .sidebar.left {
@@ -233,14 +241,15 @@ a {
       grid-area: grid-sidebar-left;
       flex-direction: column;
       @media all and ($mobile) {
-        gap: 0;
-        align-items: center;
-        position: initial;
+        gap: 0.75rem;
+        align-items: stretch;
+        position: static;
         display: flex;
-        height: unset;
-        flex-direction: row;
+        height: auto;
+        flex-direction: column;
         padding: 0;
-        padding-top: 2rem;
+        padding-top: 1rem;
+        width: 100%;
       }
     }
 
@@ -251,16 +260,15 @@ a {
       @media all and ($mobile) {
         margin-left: inherit;
         margin-right: inherit;
-      }
-      @media all and not ($desktop) {
-        position: initial;
-        height: unset;
+        position: static;
+        height: auto;
         width: 100%;
-        flex-direction: row;
+        flex-direction: column;
         padding: 0;
         & > * {
-          flex: 1;
-          max-height: 24rem;
+          flex: none;
+          max-height: none;
+          width: 100%;
         }
         & > .toc {
           display: none;
