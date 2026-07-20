@@ -31,3 +31,14 @@ gobuster dir -u 10.48.155.161 -w /usr/share/wordlists/dirbuster/directory-list-2
 
 ![扫描结果](./assets/Athena_04.png)
 
+查看共享目录
+
+![扫描结果](./assets/Athena_05.png)
+
+将目录里的文件下载到本地，我们看到管理员的消息，它定向目录是 /myrouterpanel
+
+![扫描结果](./assets/Athena_06.png)
+
+我们看到的是一个正在开发中的页面，一个用服务器ping其他设备的工具
+
+![扫描结果](./assets/Athena_07.png)
