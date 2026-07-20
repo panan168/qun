@@ -201,7 +201,7 @@ plugins:
         GitHub: https://github.com/panan168/qun
         QQ Group: https://qm.qq.com/q/aPYpZ0pkuQ
   - source: github:quartz-community/recent-notes
-    enabled: true
+    enabled: false
     options:
       title: Recent Notes
       limit: 5
