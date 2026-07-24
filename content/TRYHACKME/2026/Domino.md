@@ -1,6 +1,6 @@
-# Athena
+# Domino
 
-> 🚩 **Athena** — TryHackMe
+> 🚩 **Domino** — TryHackMe
 >
 > [👉 点击进入靶场房间](https://tryhackme.com/room/domino)
 >
