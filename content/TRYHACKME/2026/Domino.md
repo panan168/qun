@@ -104,7 +104,7 @@ admin权限里还是要我们用`/api/files.php?name=`去访问内部的文件�
 ```bash
 jq -r ".content" config.txt > clean.txt
 ```
-返回了一段数据，看到pass，估计是登录密码，先留着
+返回了一段数据，看到pass，估计是密码，先留着
 ![截图](./domino/21.png)
 
 我们在本地创建一个简单的反向连接shell，复制一下代码
