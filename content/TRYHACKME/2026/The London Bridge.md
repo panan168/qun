@@ -133,9 +133,9 @@ st:00011211aaaa
 
 将其保存到文档 `localhost.txt`，接下来，我们对可能的表示进行模糊测试，并找到一个有效的表示
 ```bash
-ffuf -w localhost.txt -X POST -u 'http://ip:8080/view_image' -H 'Content-Type: application/x-www-form-urlencoded' -d 'www=http://FUZZ'
+ffuf -w localhost.txt -X POST -u 'http://ip:8080/view_image' -H 'Content-Type: application/x-www-form-urlencoded' -d 'www=http://FUZZ' -fw 27
 ```
-为了方便我选择用`127.1:8080`
+为了方便我选择用`127.1`
 ![截图](./The%20London%20Bridge/16.png)
 
 现在我们尝试枚举所有内部开放端口，使用 `localhost` 表示 127.1 。另一个服务则运行在端口 `80` 上。
